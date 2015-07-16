@@ -1,0 +1,103 @@
+<dom-module id="subitus-courses">
+<style>
+    .collapse-content {
+        padding: 15px;
+        border: 1px solid #dedede;
+    }
+    
+    paper-material {
+        background: white;
+        box-sizing: border-box;
+        margin: 16px;
+        padding: 16px;
+        border-radius: 2px;
+    }
+
+    .fab {
+        display: inline-block;
+        background: white;
+        box-sizing: border-box;
+        width: 56px;
+        height: 56px;
+        margin: 16px;
+        padding: 16px;
+        border-radius: 50%;
+        text-align: center;
+        cursor: pointer;
+    }
+    .heading {
+        padding: 10px 15px;
+        margin-top: 20px;
+        background-color: #f3f3f3;
+        border: 1px solid #dedede;
+        border-top-left-radius: 5px;
+        border-top-right-radius: 5px;
+        font-size: 18px;
+        cursor: pointer;
+        -webkit-tap-highlight-color: rgba(0,0,0,0);
+        width: 100%;
+        text-align: left;
+    }
+    
+</style>
+<template>
+    <paper-material elevation="1" id="">
+        <h4>Cursos asignados al estudiante <span>{{ studentName }}</span></h4>
+        <template is="dom-repeat" items="{{courses}}" as="course">
+            <button class="heading" on-tap="course_expand">{{course.name}}</button>
+            <iron-collapse>
+              <div class="collapse-content">
+                <div>
+                    <template is="dom-repeat" items="{{course.files}}" as="file">
+                        <div horizontal layout>
+                            <span class="flex">{{file.name}}</span>
+                            <div>Download</div>
+                        </div>
+                        
+                    </template>  
+                </div>
+              </div>
+            </iron-collapse>
+        </template>
+    </paper-material>
+
+</template>
+<script>
+Polymer({
+    is: "subitus-courses",
+    properties: {
+        subitusData: {
+            observer: '_subitusDataChanged'
+        }
+    },
+    ready: function() {
+        this.subitusData = localStorage.getItem('subitus-data');
+
+        console.log("Empieza");
+        console.log(this.subitusData);
+        console.log("Termina");
+        
+        if(this.subitusData != null) {
+            subitusData = JSON.parse(this.subitusData);
+
+            this.courses = Object.keys(subitusData.courses).map(function (key) {return subitusData.courses[key]});
+            console.log(this.courses);
+
+            this.studentName = subitusData.firstname + ' ' + subitusData.lastname;
+        }
+
+    },
+    course_expand: function(e) {
+        e.target.nextElementSibling.toggle();
+    },
+    _subitusDataChanged: function(newValue, oldValue) {
+        if(newValue != null) {
+            subitusData = JSON.parse(newValue);
+            this.courses = Object.keys(subitusData.courses).map(function (key) {return subitusData.courses[key]});
+            this.studentName = subitusData.firstname + ' ' + subitusData.lastname;
+        }
+    }
+    
+});
+</script>
+</dom-module>

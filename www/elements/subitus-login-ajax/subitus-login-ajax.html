@@ -1,0 +1,68 @@
+<dom-module id="subitus-login-ajax">
+<template>
+    <paper-material elevation="1" id="login-paper">
+      <h3>Inicio de sesión</h3>
+      <form is="iron-form" id="form" method="post" action="/form/handler">
+        <paper-input name="username" label="No. de empleado" id="username"></paper-input>
+        <paper-input name="password" type="password" label="Contraseña" id="password"></paper-input>
+        <paper-button id="sendButton" on-tap="setajax" raised>
+            <iron-icon icon="check"></iron-icon>  Iniciar sesión
+        </paper-button>
+      </form>
+        <paper-spinner id="spinner" active={{loading}}></paper-spinner>
+    </paper-material>
+    <iron-ajax
+      id="ajax"
+      url=""
+      handle-as="json"
+      method="post"
+      on-response="hresponse"
+      debounce-duration="300"
+      loading={{loading}}>
+    </iron-ajax>
+</template>
+<script>
+Polymer({
+  is: "subitus-login-ajax",
+  ready: function() {
+      this.$.ajax.addEventListener('error', this.handleError);
+  },
+  setajax: function () {
+    this.$.sendButton.disabled = true;
+    this.$.ajax.url = "http://moodle.dtona.com.mx/webservice/rest/server.php";
+    this.$.ajax.params = {
+        "wstoken":"412117ae95a85b91731a91e2b54fa0f4",
+        "wsfunction":"local_subitus_mobile_login",
+        "username":this.$.username.value,
+        "password":this.$.password.value,
+        "moodlewsrestformat":"json"
+    };
+    this.$.ajax.generateRequest();
+  },
+  hresponse: function(request) {
+    var response = request.detail.response;
+      
+    if(response == "error") {
+        document.getElementById('toast').text = "No se puede iniciar sesión. Revisa tu usuario y contraseña.";
+        document.getElementById('toast').show();
+    } else if(response != null) {
+        document.getElementById('toast').text = "¡Bienvenido!";
+        document.getElementById('toast').show();
+        localStorage.setItem('subitus-data', response);
+        var storage = document.querySelector("subitus-courses");
+        storage.subitusData = response;
+        app.route = 'courses';
+    } else {
+        document.getElementById('toast').text = "Error de comunicación. Intente más tarde.";
+        document.getElementById('toast').show();
+    }
+    this.$.sendButton.disabled = false;
+    
+  },
+  handleError: function(event) {
+      var error = event.detail.error;
+      console.log("Error");
+  }
+});
+</script>
+</dom-module>
